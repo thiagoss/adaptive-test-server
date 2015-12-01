@@ -1,3 +1,12 @@
+"""
+Adaptive Cookies Check Test Server
+
+Servers file from a directory passed at command line.
+One of those files is considered the 'main' file. When I client
+downloads this file it gets a cookie set, other files are only
+downloaded after this cookie was set, otherwise it returns 403.
+"""
+
 import sys
 
 from flask import Flask, request, send_from_directory, make_response, abort
