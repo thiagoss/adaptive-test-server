@@ -16,6 +16,7 @@ filepath = None
 mainpath = None
 maxage = 0
 check_referer = False
+user_agent = None
 
 @app.route('/<path:path>')
 def get(path):
@@ -27,6 +28,8 @@ def get(path):
     elif request.cookies.get('auth') == '1':
         pass
     elif check_referer and request.headers.get('Referer').endswith(mainpath):
+        pass
+    elif user_agent and request.headers.get('User-Agent') == user_agent:
         pass
     else:
         abort(403)
@@ -40,6 +43,8 @@ if __name__ == "__main__":
                       help="Cookie max age")
     parser.add_option("-r", "--referer", action="store_true", default=False,
                       dest="check_referer", help="Enforce HTTP Referer checking")
+    parser.add_option("-u", "--user-agent", dest="user_agent", default="",
+                      help="HTTP User-Agent filter")
 
     (options, args) = parser.parse_args(sys.argv[1:])
 
@@ -48,5 +53,6 @@ if __name__ == "__main__":
 
     maxage = options.maxage
     check_referer = options.check_referer
+    user_agent = options.user_agent
 
     app.run(host='0.0.0.0')
