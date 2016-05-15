@@ -25,14 +25,17 @@ def get(path):
     if path == mainpath:
         if maxage > 0:
             ret.set_cookie('auth', '1', max_age=maxage)
-    elif request.cookies.get('auth') == '1':
-        pass
-    elif check_referer and request.headers.get('Referer').endswith(mainpath):
-        pass
-    elif user_agent and request.headers.get('User-Agent') == user_agent:
-        pass
     else:
-        abort(403)
+        emit_error = False
+        if maxage and request.cookies.get('auth') != '1':
+            emit_error = True
+        if check_referer and not request.headers.get('Referer').endswith(mainpath):
+            emit_error = True
+        if user_agent and request.headers.get('User-Agent') != user_agent:
+            emit_error = True
+
+        if emit_error:
+            abort(403)
 
     return ret
 
