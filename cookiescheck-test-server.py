@@ -14,20 +14,22 @@ app = Flask(__name__)
 
 filepath = None
 mainpath = None
-maxage = None
-referer = None
+maxage = 0
+check_referer = False
+user_agent = None
 
 @app.route('/<path:path>')
 def get(path):
     ret = make_response(send_from_directory(filepath, path))
 
     if path == mainpath:
-        ret.set_cookie('auth', '1', max_age=maxage)
-        if referer:
-            ret.headers['Referer'] = referer
+        if maxage > 0:
+            ret.set_cookie('auth', '1', max_age=maxage)
     elif request.cookies.get('auth') == '1':
         pass
-    elif referer and request.headers.get('referer') == referer:
+    elif check_referer and request.headers.get('Referer').endswith(mainpath):
+        pass
+    elif user_agent and request.headers.get('User-Agent') == user_agent:
         pass
     else:
         abort(403)
@@ -39,19 +41,18 @@ if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option("-m", "--max-age", dest="maxage", default=0, type=int,
                       help="Cookie max age")
-    parser.add_option("-r", "--referer",
-                      dest="referer", default="",
-                      help="HTTP referer")
+    parser.add_option("-r", "--referer", action="store_true", default=False,
+                      dest="check_referer", help="Enforce HTTP Referer checking")
+    parser.add_option("-u", "--user-agent", dest="user_agent", default="",
+                      help="HTTP User-Agent filter")
 
     (options, args) = parser.parse_args(sys.argv[1:])
 
     filepath = args[0]
     mainpath = args[1]
 
-    if options.maxage:
-        maxage = options.maxage
-
-    if options.referer:
-        referer = options.referer
+    maxage = options.maxage
+    check_referer = options.check_referer
+    user_agent = options.user_agent
 
     app.run(host='0.0.0.0')
