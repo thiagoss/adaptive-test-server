@@ -23,6 +23,7 @@ def get(path):
     ret = make_response(send_from_directory(filepath, path))
 
     if path == mainpath:
+        ret.location = "http://%s/%s" % (request.headers.get('Host'), path)
         if maxage > 0:
             ret.set_cookie('auth', '1', max_age=maxage)
     else:
